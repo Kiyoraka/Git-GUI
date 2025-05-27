@@ -31,6 +31,10 @@ class GitOneClickGUI:
         self.git_email = tk.StringVar(value="")
         self.git_installed = False
         
+        # Store references to important UI elements
+        self.dev_type_frame = None
+        self.dev_scrollable_frame = None
+        
         # Create GUI elements
         self.create_widgets()
         
@@ -159,41 +163,13 @@ class GitOneClickGUI:
         ttk.Entry(repo_frame, textvariable=self.repo_url).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
         
         # Development Type section
-        dev_type_frame = ttk.LabelFrame(main_frame, text="Development Type", padding="10")
-        dev_type_frame.pack(fill=tk.X, pady=5)
+        self.dev_type_frame = ttk.LabelFrame(main_frame, text="Development Type", padding="10")
+        self.dev_type_frame.pack(fill=tk.X, pady=5)
         
-        # Scrollable frame for development types (in case there are many)
-        dev_canvas = tk.Canvas(dev_type_frame, highlightthickness=0)
-        dev_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
-        scrollbar = ttk.Scrollbar(dev_type_frame, orient="vertical", command=dev_canvas.yview)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        dev_canvas.configure(yscrollcommand=scrollbar.set)
-        dev_canvas.bind('<Configure>', lambda e: dev_canvas.configure(scrollregion=dev_canvas.bbox("all")))
-        
-        dev_scrollable_frame = ttk.Frame(dev_canvas)
-        dev_canvas.create_window((0, 0), window=dev_scrollable_frame, anchor="nw", width=dev_canvas.winfo_reqwidth())
-        
-        # Create radio buttons for each development type
-        for dev_id, dev_info in self.dev_types.items():
-            dev_container = ttk.Frame(dev_scrollable_frame)
-            dev_container.pack(fill=tk.X, pady=2)
-            
-            rb = ttk.Radiobutton(dev_container, text=dev_info["name"], variable=self.dev_type, value=dev_id)
-            rb.pack(side=tk.LEFT)
-            
-            # Description tooltip
-            if "description" in dev_info:
-                desc_label = ttk.Label(dev_container, text=f"- {dev_info['description']}", font=("Helvetica", 9), foreground="gray")
-                desc_label.pack(side=tk.LEFT, padx=10)
-        
-        # Set default development type
-        if self.dev_types:
-            self.dev_type.set(next(iter(self.dev_types)))
+        self.create_development_type_widgets()
         
         # Custom Development Type button
-        custom_btn = ttk.Button(dev_type_frame, text="Manage Types", command=self.open_manage_types)
+        custom_btn = ttk.Button(self.dev_type_frame, text="Manage Types", command=self.open_manage_types)
         custom_btn.pack(pady=5)
         
         # Connect button
@@ -227,6 +203,63 @@ class GitOneClickGUI:
         status_bar = ttk.Label(main_frame, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(fill=tk.X, pady=(5, 0))
 
+    def create_development_type_widgets(self):
+        """Create the development type selection widgets"""
+        # Clear existing widgets if any
+        for widget in self.dev_type_frame.winfo_children():
+            if isinstance(widget, (tk.Canvas, ttk.Scrollbar)) or (hasattr(widget, 'winfo_name') and 'canvas' in widget.winfo_name()):
+                widget.destroy()
+        
+        # Scrollable frame for development types (in case there are many)
+        dev_canvas = tk.Canvas(self.dev_type_frame, highlightthickness=0, height=150)
+        dev_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        scrollbar = ttk.Scrollbar(self.dev_type_frame, orient="vertical", command=dev_canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        dev_canvas.configure(yscrollcommand=scrollbar.set)
+        
+        self.dev_scrollable_frame = ttk.Frame(dev_canvas)
+        canvas_window = dev_canvas.create_window((0, 0), window=self.dev_scrollable_frame, anchor="nw")
+        
+        # Create radio buttons for each development type
+        for dev_id, dev_info in self.dev_types.items():
+            dev_container = ttk.Frame(self.dev_scrollable_frame)
+            dev_container.pack(fill=tk.X, pady=2)
+            
+            rb = ttk.Radiobutton(dev_container, text=dev_info["name"], variable=self.dev_type, value=dev_id)
+            rb.pack(side=tk.LEFT)
+            
+            # Description tooltip
+            if "description" in dev_info:
+                desc_label = ttk.Label(dev_container, text=f"- {dev_info['description']}", font=("Helvetica", 9), foreground="gray")
+                desc_label.pack(side=tk.LEFT, padx=10)
+        
+        # Set default development type
+        if self.dev_types:
+            if self.dev_type.get() not in self.dev_types:
+                self.dev_type.set(next(iter(self.dev_types)))
+        
+        # Update scroll region when frame changes
+        def configure_scroll_region(event=None):
+            dev_canvas.configure(scrollregion=dev_canvas.bbox("all"))
+            # Make sure the frame fills the canvas width
+            canvas_width = dev_canvas.winfo_width()
+            if canvas_width > 1:  # Avoid issues during initialization
+                dev_canvas.itemconfig(canvas_window, width=canvas_width)
+        
+        self.dev_scrollable_frame.bind('<Configure>', configure_scroll_region)
+        dev_canvas.bind('<Configure>', configure_scroll_region)
+        
+        # Initial scroll region setup
+        self.root.after(100, configure_scroll_region)
+
+    def refresh_development_types_ui(self):
+        """Refresh the development types section in the main UI"""
+        if self.dev_type_frame and self.dev_type_frame.winfo_exists():
+            # Recreate the development type widgets
+            self.create_development_type_widgets()
+
     def open_manage_types(self):
         """Open dialog to manage development types"""
         # Create a new top-level window
@@ -253,28 +286,39 @@ class GitOneClickGUI:
         scrollbar.config(command=listbox.yview)
         
         # Populate listbox with types
-        for dev_id, dev_info in self.dev_types.items():
-            listbox.insert(tk.END, f"{dev_info['name']} ({dev_id})")
+        def refresh_listbox():
+            listbox.delete(0, tk.END)
+            for dev_id, dev_info in self.dev_types.items():
+                listbox.insert(tk.END, f"{dev_info['name']} ({dev_id})")
+        
+        refresh_listbox()
         
         # Buttons for adding, editing, and removing types
         btn_frame = ttk.Frame(types_frame)
         btn_frame.pack(fill=tk.X, pady=10)
         
         ttk.Button(btn_frame, text="Add New Type", 
-                command=lambda: self.edit_type_dialog(manage_window)).pack(side=tk.LEFT, padx=5)
+                command=lambda: self.edit_type_dialog(manage_window, None, refresh_listbox)).pack(side=tk.LEFT, padx=5)
+        
+        def get_selected_type_id():
+            selection = listbox.curselection()
+            if selection:
+                selected_text = listbox.get(selection[0])
+                return selected_text.split(" (")[-1][:-1]
+            return None
         
         ttk.Button(btn_frame, text="Edit Selected", 
-                command=lambda: self.edit_type_dialog(manage_window, listbox.get(tk.ACTIVE).split(" (")[-1][:-1] if listbox.curselection() else None)).pack(side=tk.LEFT, padx=5)
+                command=lambda: self.edit_type_dialog(manage_window, get_selected_type_id(), refresh_listbox)).pack(side=tk.LEFT, padx=5)
         
         ttk.Button(btn_frame, text="Remove Selected", 
-                command=lambda: self.remove_type(listbox.get(tk.ACTIVE).split(" (")[-1][:-1] if listbox.curselection() else None, listbox)).pack(side=tk.LEFT, padx=5)
+                command=lambda: self.remove_type(get_selected_type_id(), refresh_listbox)).pack(side=tk.LEFT, padx=5)
         
         # Import/Export buttons
         io_frame = ttk.Frame(types_frame)
         io_frame.pack(fill=tk.X, pady=5)
         
         ttk.Button(io_frame, text="Import Types", 
-                command=lambda: self.import_types(listbox)).pack(side=tk.LEFT, padx=5)
+                command=lambda: self.import_types(refresh_listbox)).pack(side=tk.LEFT, padx=5)
         
         ttk.Button(io_frame, text="Export All Types", 
                 command=self.export_types).pack(side=tk.LEFT, padx=5)
@@ -283,7 +327,7 @@ class GitOneClickGUI:
         ttk.Button(manage_window, text="Done", 
                 command=manage_window.destroy).pack(pady=10)
 
-    def edit_type_dialog(self, parent, type_id=None):
+    def edit_type_dialog(self, parent, type_id=None, refresh_callback=None):
         """Open dialog to add or edit a development type"""
         is_new = type_id is None
         
@@ -375,10 +419,11 @@ class GitOneClickGUI:
                     type_name_var.get(), 
                     type_desc_var.get(), 
                     gitignore_text.get("1.0", tk.END), 
-                    readme_text.get("1.0", tk.END)
+                    readme_text.get("1.0", tk.END),
+                    refresh_callback
                 )).pack(side=tk.RIGHT, padx=5)
 
-    def save_type(self, dialog, type_id, name, description, gitignore, readme):
+    def save_type(self, dialog, type_id, name, description, gitignore, readme, refresh_callback=None):
         """Save a development type to the configuration"""
         if not type_id:
             messagebox.showwarning("Invalid Input", "Type ID is required.")
@@ -405,10 +450,12 @@ class GitOneClickGUI:
         # Close dialog
         dialog.destroy()
         
-        # Refresh the GUI
-        self.create_widgets()
+        # Refresh UI components
+        if refresh_callback:
+            refresh_callback()
+        self.refresh_development_types_ui()
 
-    def remove_type(self, type_id, listbox):
+    def remove_type(self, type_id, refresh_callback=None):
         """Remove a development type from the configuration"""
         if not type_id:
             messagebox.showwarning("No Selection", "Please select a development type to remove.")
@@ -423,12 +470,12 @@ class GitOneClickGUI:
                 # Save to file
                 self.save_development_types()
                 
-                # Refresh listbox
-                listbox.delete(0, tk.END)
-                for dev_id, dev_info in self.dev_types.items():
-                    listbox.insert(tk.END, f"{dev_info['name']} ({dev_id})")
+                # Refresh UI components
+                if refresh_callback:
+                    refresh_callback()
+                self.refresh_development_types_ui()
 
-    def import_types(self, listbox):
+    def import_types(self, refresh_callback=None):
         """Import development types from a JSON file"""
         file_path = filedialog.askopenfilename(
             title="Import Development Types",
@@ -456,10 +503,10 @@ class GitOneClickGUI:
                 # Save to file
                 self.save_development_types()
                 
-                # Refresh listbox
-                listbox.delete(0, tk.END)
-                for dev_id, dev_info in self.dev_types.items():
-                    listbox.insert(tk.END, f"{dev_info['name']} ({dev_id})")
+                # Refresh UI components
+                if refresh_callback:
+                    refresh_callback()
+                self.refresh_development_types_ui()
                 
                 messagebox.showinfo("Import Successful", f"Successfully imported {len(imported_types)} development types.")
             
