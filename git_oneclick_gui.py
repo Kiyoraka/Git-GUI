@@ -12,11 +12,10 @@ class GitOneClickGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Git-OneClick")
-        self.root.geometry("700x580")
         self.root.resizable(True, True)
         
         # Set minimum window size
-        self.root.minsize(600, 500)
+        self.root.minsize(650, 500)
         
         # Load development types
         self.dev_types = {}
@@ -37,6 +36,9 @@ class GitOneClickGUI:
         
         # Create GUI elements
         self.create_widgets()
+        
+        # Auto-resize window based on content
+        self.auto_resize_window()
         
         # Check for Git installation
         self.git_installed = self.check_git()
@@ -105,170 +107,267 @@ class GitOneClickGUI:
         
         return os.path.join(base_path, relative_path)
 
+    def auto_resize_window(self):
+        """Automatically resize window based on content"""
+        self.root.update_idletasks()
+        
+        # Calculate the required height based on number of development types
+        base_height = 450  # Base height for other elements
+        dev_types_count = len(self.dev_types)
+        
+        # Each development type takes about 25 pixels (radio button + padding)
+        dev_types_height = min(dev_types_count * 25, 200)  # Max 200px for scrolling
+        
+        # Total required height
+        required_height = base_height + dev_types_height
+        
+        # Set window geometry with calculated dimensions
+        window_width = 750
+        window_height = min(required_height, 900)  # Max height to fit most screens
+        
+        # Center the window on screen
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
     def create_widgets(self):
-        # Create main frame with padding
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        # Clear existing widgets
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        
+        # Main scrollable frame
+        main_canvas = tk.Canvas(self.root)
+        main_scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=main_canvas.yview)
+        main_scrollable_frame = ttk.Frame(main_canvas)
+        
+        main_scrollable_frame.bind(
+            "<Configure>",
+            lambda e: main_canvas.configure(scrollregion=main_canvas.bbox("all"))
+        )
+        
+        main_canvas.create_window((0, 0), window=main_scrollable_frame, anchor="nw")
+        main_canvas.configure(yscrollcommand=main_scrollbar.set)
+        
+        # Pack main canvas and scrollbar
+        main_canvas.pack(side="left", fill="both", expand=True)
+        main_scrollbar.pack(side="right", fill="y")
+        
+        # Create content in the scrollable frame
+        content_frame = ttk.Frame(main_scrollable_frame, padding="15")
+        content_frame.pack(fill=tk.BOTH, expand=True)
         
         # Title
-        title_label = ttk.Label(main_frame, text="Git-OneClick", font=("Helvetica", 16, "bold"))
-        title_label.pack(pady=10)
+        title_label = ttk.Label(content_frame, text="Git-OneClick", font=("Helvetica", 18, "bold"))
+        title_label.pack(pady=(0, 15))
         
         # User Type section
-        user_type_frame = ttk.LabelFrame(main_frame, text="User Type", padding="10")
-        user_type_frame.pack(fill=tk.X, pady=5)
+        user_type_frame = ttk.LabelFrame(content_frame, text="User Type", padding="10")
+        user_type_frame.pack(fill=tk.X, pady=(0, 10))
         
         ttk.Radiobutton(user_type_frame, text="First Time User (Setup Git configuration)", 
                       variable=self.user_type, value="new_user", 
-                      command=self.toggle_user_fields).pack(anchor=tk.W)
+                      command=self.toggle_user_fields).pack(anchor=tk.W, pady=2)
         ttk.Radiobutton(user_type_frame, text="Existing User (Already have Git configured)", 
                       variable=self.user_type, value="existing_user", 
-                      command=self.toggle_user_fields).pack(anchor=tk.W)
+                      command=self.toggle_user_fields).pack(anchor=tk.W, pady=2)
         
         # User info section (only shown for new users)
-        self.user_info_frame = ttk.Frame(main_frame)
-        self.user_info_frame.pack(fill=tk.X, pady=5)
+        self.user_info_frame = ttk.Frame(content_frame)
+        self.user_info_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # Git name
-        name_frame = ttk.Frame(self.user_info_frame)
-        name_frame.pack(fill=tk.X, pady=5)
-        ttk.Label(name_frame, text="Git Username:").pack(side=tk.LEFT)
-        ttk.Entry(name_frame, textvariable=self.git_name).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        # Create user info fields in a grid for better space usage
+        user_info_inner = ttk.Frame(self.user_info_frame)
+        user_info_inner.pack(fill=tk.X, padx=10)
         
-        # Git email
-        email_frame = ttk.Frame(self.user_info_frame)
-        email_frame.pack(fill=tk.X, pady=5)
-        ttk.Label(email_frame, text="Git Email:").pack(side=tk.LEFT)
-        ttk.Entry(email_frame, textvariable=self.git_email).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        # Git name and email in same row
+        user_row = ttk.Frame(user_info_inner)
+        user_row.pack(fill=tk.X, pady=5)
+        
+        # Git name (left half)
+        name_frame = ttk.Frame(user_row)
+        name_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        ttk.Label(name_frame, text="Git Username:").pack(anchor=tk.W)
+        ttk.Entry(name_frame, textvariable=self.git_name).pack(fill=tk.X)
+        
+        # Git email (right half)
+        email_frame = ttk.Frame(user_row)
+        email_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
+        ttk.Label(email_frame, text="Git Email:").pack(anchor=tk.W)
+        ttk.Entry(email_frame, textvariable=self.git_email).pack(fill=tk.X)
         
         # Project Configuration section
-        project_frame = ttk.LabelFrame(main_frame, text="Project Configuration", padding="10")
-        project_frame.pack(fill=tk.X, pady=5)
+        project_frame = ttk.LabelFrame(content_frame, text="Project Configuration", padding="10")
+        project_frame.pack(fill=tk.X, pady=(0, 10))
         
         # Folder selection
         folder_frame = ttk.Frame(project_frame)
-        folder_frame.pack(fill=tk.X, pady=5)
+        folder_frame.pack(fill=tk.X, pady=(0, 8))
         
-        self.folder_label = ttk.Label(folder_frame, text="No folder selected")
-        self.folder_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        ttk.Label(folder_frame, text="Project Folder:").pack(anchor=tk.W)
+        folder_row = ttk.Frame(folder_frame)
+        folder_row.pack(fill=tk.X, pady=(3, 0))
         
-        folder_btn = ttk.Button(folder_frame, text="Select Folder", command=self.select_folder)
+        self.folder_label = ttk.Label(folder_row, text="No folder selected", relief=tk.SUNKEN, anchor=tk.W)
+        self.folder_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+        
+        folder_btn = ttk.Button(folder_row, text="Browse", command=self.select_folder)
         folder_btn.pack(side=tk.RIGHT)
         
         # Repository URL input
         repo_frame = ttk.Frame(project_frame)
-        repo_frame.pack(fill=tk.X, pady=5)
+        repo_frame.pack(fill=tk.X)
         
-        ttk.Label(repo_frame, text="GitHub Repository URL:").pack(side=tk.LEFT)
-        ttk.Entry(repo_frame, textvariable=self.repo_url).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        ttk.Label(repo_frame, text="GitHub Repository URL:").pack(anchor=tk.W)
+        ttk.Entry(repo_frame, textvariable=self.repo_url).pack(fill=tk.X, pady=(3, 0))
         
         # Development Type section
-        self.dev_type_frame = ttk.LabelFrame(main_frame, text="Development Type", padding="10")
-        self.dev_type_frame.pack(fill=tk.X, pady=5)
+        self.dev_type_frame = ttk.LabelFrame(content_frame, text="Development Type", padding="10")
+        self.dev_type_frame.pack(fill=tk.X, pady=(0, 10))
         
         self.create_development_type_widgets()
         
-        # Custom Development Type button
-        custom_btn = ttk.Button(self.dev_type_frame, text="Manage Types", command=self.open_manage_types)
-        custom_btn.pack(pady=5)
+        # Manage Types button
+        manage_btn_frame = ttk.Frame(self.dev_type_frame)
+        manage_btn_frame.pack(fill=tk.X, pady=(8, 0))
+        
+        ttk.Button(manage_btn_frame, text="Manage Development Types", 
+                  command=self.open_manage_types).pack()
+        
+        # Action buttons frame
+        action_frame = ttk.Frame(content_frame)
+        action_frame.pack(fill=tk.X, pady=(10, 0))
         
         # Connect button
-        connect_btn = ttk.Button(main_frame, text="Connect to GitHub", 
+        connect_btn = ttk.Button(action_frame, text="Connect to GitHub", 
                                command=self.start_connection, style="Accent.TButton")
-        connect_btn.pack(pady=10)
+        connect_btn.pack(pady=(0, 10))
         
         # Create custom style for the connect button
         style = ttk.Style()
         style.configure("Accent.TButton", font=("Helvetica", 12, "bold"))
         
         # Progress bar
-        self.progress_bar = ttk.Progressbar(main_frame, mode="determinate")
-        self.progress_bar.pack(fill=tk.X, pady=5)
+        self.progress_bar = ttk.Progressbar(action_frame, mode="determinate")
+        self.progress_bar.pack(fill=tk.X, pady=(0, 10))
         
         # Log area
-        log_frame = ttk.LabelFrame(main_frame, text="Connection Log", padding="10")
-        log_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        log_frame = ttk.LabelFrame(content_frame, text="Connection Log", padding="8")
+        log_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
         
-        # Scrollbar for log
-        scrollbar = ttk.Scrollbar(log_frame)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        # Create log text with scrollbar
+        log_container = ttk.Frame(log_frame)
+        log_container.pack(fill=tk.BOTH, expand=True)
         
-        # Log text widget
-        self.log_text = tk.Text(log_frame, height=10, wrap=tk.WORD, yscrollcommand=scrollbar.set)
-        self.log_text.pack(fill=tk.BOTH, expand=True)
-        scrollbar.config(command=self.log_text.yview)
+        log_scrollbar = ttk.Scrollbar(log_container)
+        log_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.log_text = tk.Text(log_container, height=8, wrap=tk.WORD, yscrollcommand=log_scrollbar.set)
+        self.log_text.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
+        log_scrollbar.config(command=self.log_text.yview)
         
         # Status bar
         self.status_var = tk.StringVar(value="Ready")
-        status_bar = ttk.Label(main_frame, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
+        status_bar = ttk.Label(content_frame, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(fill=tk.X, pady=(5, 0))
+        
+        # Bind mouse wheel to main canvas
+        def _on_mousewheel(event):
+            main_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        main_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        # Update scroll region after all widgets are created
+        self.root.after(100, lambda: main_canvas.configure(scrollregion=main_canvas.bbox("all")))
 
     def create_development_type_widgets(self):
         """Create the development type selection widgets"""
-        # Clear existing widgets if any
+        # Clear existing dev type widgets
         for widget in self.dev_type_frame.winfo_children():
-            if isinstance(widget, (tk.Canvas, ttk.Scrollbar)) or (hasattr(widget, 'winfo_name') and 'canvas' in widget.winfo_name()):
+            if not isinstance(widget, ttk.Button) and not isinstance(widget, ttk.Frame):
                 widget.destroy()
         
-        # Scrollable frame for development types (in case there are many)
-        dev_canvas = tk.Canvas(self.dev_type_frame, highlightthickness=0, height=150)
-        dev_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
-        scrollbar = ttk.Scrollbar(self.dev_type_frame, orient="vertical", command=dev_canvas.yview)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        dev_canvas.configure(yscrollcommand=scrollbar.set)
-        
-        self.dev_scrollable_frame = ttk.Frame(dev_canvas)
-        canvas_window = dev_canvas.create_window((0, 0), window=self.dev_scrollable_frame, anchor="nw")
-        
-        # Create radio buttons for each development type
-        for dev_id, dev_info in self.dev_types.items():
-            dev_container = ttk.Frame(self.dev_scrollable_frame)
-            dev_container.pack(fill=tk.X, pady=2)
+        # Create a more compact layout for development types
+        if len(self.dev_types) <= 6:
+            # If 6 or fewer types, show them all without scrolling
+            for dev_id, dev_info in self.dev_types.items():
+                dev_row = ttk.Frame(self.dev_type_frame)
+                dev_row.pack(fill=tk.X, pady=1)
+                
+                rb = ttk.Radiobutton(dev_row, text=dev_info["name"], variable=self.dev_type, value=dev_id)
+                rb.pack(side=tk.LEFT)
+                
+                if "description" in dev_info:
+                    desc_label = ttk.Label(dev_row, text=f"- {dev_info['description']}", 
+                                         font=("Helvetica", 9), foreground="gray")
+                    desc_label.pack(side=tk.LEFT, padx=(8, 0))
+        else:
+            # If more than 6 types, use a scrollable frame
+            dev_canvas = tk.Canvas(self.dev_type_frame, highlightthickness=0, height=150)
+            dev_canvas.pack(fill=tk.X, pady=(0, 8))
             
-            rb = ttk.Radiobutton(dev_container, text=dev_info["name"], variable=self.dev_type, value=dev_id)
-            rb.pack(side=tk.LEFT)
+            dev_scrollbar = ttk.Scrollbar(self.dev_type_frame, orient="vertical", command=dev_canvas.yview)
+            dev_scrollbar.pack(side=tk.RIGHT, fill=tk.Y, before=dev_canvas)
             
-            # Description tooltip
-            if "description" in dev_info:
-                desc_label = ttk.Label(dev_container, text=f"- {dev_info['description']}", font=("Helvetica", 9), foreground="gray")
-                desc_label.pack(side=tk.LEFT, padx=10)
+            dev_canvas.configure(yscrollcommand=dev_scrollbar.set)
+            
+            self.dev_scrollable_frame = ttk.Frame(dev_canvas)
+            canvas_window = dev_canvas.create_window((0, 0), window=self.dev_scrollable_frame, anchor="nw")
+            
+            # Create radio buttons for each development type
+            for dev_id, dev_info in self.dev_types.items():
+                dev_row = ttk.Frame(self.dev_scrollable_frame)
+                dev_row.pack(fill=tk.X, pady=1)
+                
+                rb = ttk.Radiobutton(dev_row, text=dev_info["name"], variable=self.dev_type, value=dev_id)
+                rb.pack(side=tk.LEFT)
+                
+                if "description" in dev_info:
+                    desc_label = ttk.Label(dev_row, text=f"- {dev_info['description']}", 
+                                         font=("Helvetica", 9), foreground="gray")
+                    desc_label.pack(side=tk.LEFT, padx=(8, 0))
+            
+            # Configure scroll region
+            def configure_dev_scroll(event=None):
+                dev_canvas.configure(scrollregion=dev_canvas.bbox("all"))
+                canvas_width = dev_canvas.winfo_width()
+                if canvas_width > 1:
+                    dev_canvas.itemconfig(canvas_window, width=canvas_width)
+            
+            self.dev_scrollable_frame.bind('<Configure>', configure_dev_scroll)
+            dev_canvas.bind('<Configure>', configure_dev_scroll)
+            self.root.after(100, configure_dev_scroll)
         
         # Set default development type
         if self.dev_types:
             if self.dev_type.get() not in self.dev_types:
                 self.dev_type.set(next(iter(self.dev_types)))
-        
-        # Update scroll region when frame changes
-        def configure_scroll_region(event=None):
-            dev_canvas.configure(scrollregion=dev_canvas.bbox("all"))
-            # Make sure the frame fills the canvas width
-            canvas_width = dev_canvas.winfo_width()
-            if canvas_width > 1:  # Avoid issues during initialization
-                dev_canvas.itemconfig(canvas_window, width=canvas_width)
-        
-        self.dev_scrollable_frame.bind('<Configure>', configure_scroll_region)
-        dev_canvas.bind('<Configure>', configure_scroll_region)
-        
-        # Initial scroll region setup
-        self.root.after(100, configure_scroll_region)
 
     def refresh_development_types_ui(self):
         """Refresh the development types section in the main UI"""
         if self.dev_type_frame and self.dev_type_frame.winfo_exists():
-            # Recreate the development type widgets
             self.create_development_type_widgets()
+            # Auto-resize window after refresh
+            self.root.after(100, self.auto_resize_window)
 
     def open_manage_types(self):
         """Open dialog to manage development types"""
         # Create a new top-level window
         manage_window = tk.Toplevel(self.root)
         manage_window.title("Manage Development Types")
-        manage_window.geometry("600x500")
+        manage_window.geometry("650x550")
         manage_window.resizable(True, True)
         manage_window.transient(self.root)
         manage_window.grab_set()
+        
+        # Center the dialog
+        manage_window.geometry("+%d+%d" % (
+            self.root.winfo_rootx() + 50,
+            self.root.winfo_rooty() + 50
+        ))
         
         # Create a list of current development types
         types_frame = ttk.LabelFrame(manage_window, text="Current Development Types", padding="10")
@@ -551,7 +650,7 @@ class GitOneClickGUI:
     def toggle_user_fields(self):
         """Show or hide user info fields based on user type"""
         if self.user_type.get() == "new_user":
-            self.user_info_frame.pack(fill=tk.X, pady=5, after=self.root.nametowidget(".!frame.!labelframe"))
+            self.user_info_frame.pack(fill=tk.X, pady=(0, 10), before=self.user_info_frame.master.winfo_children()[2])
         else:
             self.user_info_frame.pack_forget()
 
