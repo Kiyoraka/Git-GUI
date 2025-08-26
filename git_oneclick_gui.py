@@ -6,16 +6,21 @@ from tkinter import filedialog, messagebox, ttk
 from threading import Thread
 import json
 import shutil
+import platform
 
 
 class GitOneClickGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Git-OneClick")
+        self.root.title("Git-OneClick v2.0.0 💜 Alice Edition")
         self.root.resizable(True, True)
         
-        # Set minimum window size
-        self.root.minsize(650, 500)
+        # Glassmorphism setup
+        self.setup_glassmorphism()
+        
+        # Set perfect fixed window size - no scrolling needed
+        self.root.minsize(740, 700)
+        self.root.maxsize(740, 700)  # Fixed size like your perfect adjustment
         
         # Load development types
         self.dev_types = {}
@@ -42,6 +47,169 @@ class GitOneClickGUI:
         
         # Check for Git installation
         self.git_installed = self.check_git()
+    
+    def setup_glassmorphism(self):
+        """Setup glassmorphism effects and styling"""
+        # Configure window transparency and blur effects
+        if platform.system() == "Windows":
+            # Windows-specific blur effects
+            try:
+                self.root.wm_attributes("-alpha", 0.95)  # Semi-transparent
+                # Modern Windows blur effect
+                self.root.configure(bg='#1a1625')  # Dark purple base
+            except:
+                self.root.configure(bg='#2D1B69')  # Fallback purple
+        else:
+            # Cross-platform transparency
+            self.root.configure(bg='#2D1B69')
+            try:
+                self.root.wm_attributes("-alpha", 0.93)
+            except:
+                pass
+        
+        # Setup custom styling
+        self.setup_custom_styles()
+    
+    def setup_custom_styles(self):
+        """Create beautiful glassmorphism-inspired TTK styles"""
+        style = ttk.Style()
+        
+        # Set theme base
+        available_themes = style.theme_names()
+        if 'clam' in available_themes:
+            style.theme_use('clam')
+        elif 'alt' in available_themes:
+            style.theme_use('alt')
+        
+        # Alice's signature purple palette
+        colors = {
+            'bg_primary': '#2D1B69',      # Deep purple
+            'bg_secondary': '#3D2B79',    # Medium purple
+            'bg_glass': '#4A3B89',        # Glass effect purple
+            'accent': '#9B59B6',          # Alice purple
+            'accent_light': '#BB77D4',    # Light purple
+            'text_primary': '#FFFFFF',    # White text
+            'text_secondary': '#E6E6FA',  # Lavender text
+            'border': '#6A5ACD'           # Slate blue border
+        }
+        
+        # Configure main window styles
+        style.configure('Glass.TFrame', 
+                       background=colors['bg_glass'],
+                       relief='flat',
+                       borderwidth=1)
+        
+        style.configure('Transparent.TFrame',
+                       background=colors['bg_primary'],
+                       relief='flat')
+        
+        # Beautiful labels with purple glow effect
+        style.configure('Title.TLabel',
+                       background=colors['bg_primary'],
+                       foreground=colors['accent_light'],
+                       font=('Segoe UI', 20, 'bold'))
+        
+        style.configure('Subtitle.TLabel',
+                       background=colors['bg_primary'],
+                       foreground=colors['text_secondary'],
+                       font=('Segoe UI', 10, 'italic'))
+        
+        style.configure('Glass.TLabel',
+                       background=colors['bg_glass'],
+                       foreground=colors['text_primary'],
+                       font=('Segoe UI', 9))
+        
+        style.configure('Accent.TLabel',
+                       background=colors['bg_primary'],
+                       foreground=colors['accent'],
+                       font=('Segoe UI', 9, 'bold'))
+        
+        # Glassmorphism LabelFrame
+        style.configure('Glass.TLabelframe',
+                       background=colors['bg_glass'],
+                       bordercolor=colors['border'],
+                       borderwidth=1,
+                       relief='raised')
+        
+        style.configure('Glass.TLabelframe.Label',
+                       background=colors['bg_glass'],
+                       foreground=colors['accent_light'],
+                       font=('Segoe UI', 10, 'bold'))
+        
+        # Beautiful buttons with hover effects
+        style.configure('Glass.TButton',
+                       background=colors['bg_secondary'],
+                       foreground=colors['text_primary'],
+                       bordercolor=colors['border'],
+                       borderwidth=1,
+                       font=('Segoe UI', 9),
+                       padding=(12, 8))
+        
+        style.map('Glass.TButton',
+                 background=[('active', colors['accent']),
+                            ('pressed', colors['bg_primary'])])
+        
+        # Primary action button (Connect to GitHub)
+        style.configure('Primary.TButton',
+                       background=colors['accent'],
+                       foreground='white',
+                       bordercolor=colors['accent_light'],
+                       borderwidth=2,
+                       font=('Segoe UI', 12, 'bold'),
+                       padding=(20, 12))
+        
+        style.map('Primary.TButton',
+                 background=[('active', colors['accent_light']),
+                            ('pressed', colors['bg_secondary'])])
+        
+        # Entry fields with glass effect
+        style.configure('Glass.TEntry',
+                       background=colors['bg_secondary'],
+                       foreground=colors['text_primary'],
+                       bordercolor=colors['border'],
+                       insertcolor=colors['accent'],
+                       font=('Segoe UI', 9))
+        
+        # Radio buttons
+        style.configure('Glass.TRadiobutton',
+                       background=colors['bg_glass'],
+                       foreground=colors['text_primary'],
+                       font=('Segoe UI', 9))
+        
+        style.map('Glass.TRadiobutton',
+                 background=[('active', colors['bg_secondary'])])
+        
+        # Progress bar with Alice purple
+        style.configure('Alice.Horizontal.TProgressbar',
+                       background=colors['accent'],
+                       troughcolor=colors['bg_secondary'],
+                       borderwidth=1,
+                       lightcolor=colors['accent_light'],
+                       darkcolor=colors['bg_primary'])
+        
+        # Scrollbars
+        style.configure('Glass.Vertical.TScrollbar',
+                       background=colors['bg_secondary'],
+                       troughcolor=colors['bg_primary'],
+                       bordercolor=colors['border'])
+        
+        return colors  # Return colors for use in Text widgets
+    
+    def get_dev_type_emoji(self, dev_id):
+        """Get appropriate emoji for development type"""
+        emoji_map = {
+            'web': '🌐',
+            'python': '🐍', 
+            'flutter': '📱',
+            'unity': '🎮',
+            'android': '🤖',
+            'laravel': '🚀',
+            'basic': '⚙️',
+            'fastapi': '⚡',
+            'nextjs': '⚛️',
+            'alice-portfolio': '💜'
+        }
+        return emoji_map.get(dev_id, '📁')
 
     def load_development_types(self):
         """Load development types from the configuration file"""
@@ -108,22 +276,12 @@ class GitOneClickGUI:
         return os.path.join(base_path, relative_path)
 
     def auto_resize_window(self):
-        """Automatically resize window based on content"""
+        """Set perfect fixed window size - no scrolling needed"""
         self.root.update_idletasks()
         
-        # Calculate the required height based on number of development types
-        base_height = 450  # Base height for other elements
-        dev_types_count = len(self.dev_types)
-        
-        # Each development type takes about 25 pixels (radio button + padding)
-        dev_types_height = min(dev_types_count * 25, 200)  # Max 200px for scrolling
-        
-        # Total required height
-        required_height = base_height + dev_types_height
-        
-        # Set window geometry with calculated dimensions
-        window_width = 750
-        window_height = min(required_height, 900)  # Max height to fit most screens
+        # Perfect fixed dimensions for no-scroll experience
+        window_width = 740
+        window_height = 700
         
         # Center the window on screen
         screen_width = self.root.winfo_screenwidth()
@@ -132,17 +290,24 @@ class GitOneClickGUI:
         x = (screen_width - window_width) // 2
         y = (screen_height - window_height) // 2
         
+        # Set fixed geometry - exactly like your perfect manual adjustment
         self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        
+        # Prevent resizing to maintain perfect layout
+        self.root.resizable(False, False)
 
     def create_widgets(self):
         # Clear existing widgets
         for widget in self.root.winfo_children():
             widget.destroy()
         
-        # Main scrollable frame
-        main_canvas = tk.Canvas(self.root)
-        main_scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=main_canvas.yview)
-        main_scrollable_frame = ttk.Frame(main_canvas)
+        # Get color scheme from styles
+        colors = self.setup_custom_styles()
+        
+        # Main scrollable frame with glassmorphism
+        main_canvas = tk.Canvas(self.root, bg=colors['bg_primary'], highlightthickness=0)
+        main_scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=main_canvas.yview, style="Glass.Vertical.TScrollbar")
+        main_scrollable_frame = ttk.Frame(main_canvas, style="Transparent.TFrame")
         
         main_scrollable_frame.bind(
             "<Configure>",
@@ -156,123 +321,129 @@ class GitOneClickGUI:
         main_canvas.pack(side="left", fill="both", expand=True)
         main_scrollbar.pack(side="right", fill="y")
         
-        # Create content in the scrollable frame
-        content_frame = ttk.Frame(main_scrollable_frame, padding="15")
+        # Create content in the scrollable frame with glassmorphism padding
+        content_frame = ttk.Frame(main_scrollable_frame, padding="20", style="Transparent.TFrame")
         content_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Title
-        title_label = ttk.Label(content_frame, text="Git-OneClick", font=("Helvetica", 18, "bold"))
-        title_label.pack(pady=(0, 15))
+        # Beautiful title with Alice purple glow
+        title_label = ttk.Label(content_frame, text="✨ Git-OneClick v2.0.0 ✨", style="Title.TLabel")
+        title_label.pack(pady=(10, 5))
         
-        # User Type section
-        user_type_frame = ttk.LabelFrame(content_frame, text="User Type", padding="10")
-        user_type_frame.pack(fill=tk.X, pady=(0, 10))
+        # Elegant subtitle with Alice signature
+        subtitle_label = ttk.Label(content_frame, text="💜 Instant GitHub Repository Setup - Powered by Alice 💜", style="Subtitle.TLabel")
+        subtitle_label.pack(pady=(0, 20))
         
-        ttk.Radiobutton(user_type_frame, text="First Time User (Setup Git configuration)", 
+        # User Type section with glassmorphism
+        user_type_frame = ttk.LabelFrame(content_frame, text="👤 User Type", padding="15", style="Glass.TLabelframe")
+        user_type_frame.pack(fill=tk.X, pady=(0, 12))
+        
+        ttk.Radiobutton(user_type_frame, text="🆕 First Time User (Setup Git configuration)", 
                       variable=self.user_type, value="new_user", 
-                      command=self.toggle_user_fields).pack(anchor=tk.W, pady=2)
-        ttk.Radiobutton(user_type_frame, text="Existing User (Already have Git configured)", 
+                      command=self.toggle_user_fields, style="Glass.TRadiobutton").pack(anchor=tk.W, pady=4)
+        ttk.Radiobutton(user_type_frame, text="✅ Existing User (Already have Git configured)", 
                       variable=self.user_type, value="existing_user", 
-                      command=self.toggle_user_fields).pack(anchor=tk.W, pady=2)
+                      command=self.toggle_user_fields, style="Glass.TRadiobutton").pack(anchor=tk.W, pady=4)
         
-        # User info section (only shown for new users)
-        self.user_info_frame = ttk.Frame(content_frame)
-        self.user_info_frame.pack(fill=tk.X, pady=(0, 10))
+        # User info section with glassmorphism (only shown for new users)
+        self.user_info_frame = ttk.Frame(content_frame, style="Glass.TFrame")
+        self.user_info_frame.pack(fill=tk.X, pady=(0, 12))
         
-        # Create user info fields in a grid for better space usage
-        user_info_inner = ttk.Frame(self.user_info_frame)
-        user_info_inner.pack(fill=tk.X, padx=10)
+        # Create user info fields with glassmorphism styling
+        user_info_inner = ttk.Frame(self.user_info_frame, style="Glass.TFrame")
+        user_info_inner.pack(fill=tk.X, padx=15, pady=10)
         
-        # Git name and email in same row
-        user_row = ttk.Frame(user_info_inner)
-        user_row.pack(fill=tk.X, pady=5)
+        # Git name and email in same row with beautiful styling
+        user_row = ttk.Frame(user_info_inner, style="Glass.TFrame")
+        user_row.pack(fill=tk.X, pady=8)
         
-        # Git name (left half)
-        name_frame = ttk.Frame(user_row)
-        name_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
-        ttk.Label(name_frame, text="Git Username:").pack(anchor=tk.W)
-        ttk.Entry(name_frame, textvariable=self.git_name).pack(fill=tk.X)
+        # Git name (left half) with glass effect
+        name_frame = ttk.Frame(user_row, style="Glass.TFrame")
+        name_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+        ttk.Label(name_frame, text="🔑 Git Username:", style="Accent.TLabel").pack(anchor=tk.W, pady=(0, 3))
+        ttk.Entry(name_frame, textvariable=self.git_name, style="Glass.TEntry", font=('Segoe UI', 9)).pack(fill=tk.X)
         
-        # Git email (right half)
-        email_frame = ttk.Frame(user_row)
-        email_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
-        ttk.Label(email_frame, text="Git Email:").pack(anchor=tk.W)
-        ttk.Entry(email_frame, textvariable=self.git_email).pack(fill=tk.X)
+        # Git email (right half) with glass effect
+        email_frame = ttk.Frame(user_row, style="Glass.TFrame")
+        email_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(8, 0))
+        ttk.Label(email_frame, text="📧 Git Email:", style="Accent.TLabel").pack(anchor=tk.W, pady=(0, 3))
+        ttk.Entry(email_frame, textvariable=self.git_email, style="Glass.TEntry", font=('Segoe UI', 9)).pack(fill=tk.X)
         
-        # Project Configuration section
-        project_frame = ttk.LabelFrame(content_frame, text="Project Configuration", padding="10")
-        project_frame.pack(fill=tk.X, pady=(0, 10))
+        # Project Configuration section with beautiful glassmorphism
+        project_frame = ttk.LabelFrame(content_frame, text="📁 Project Configuration", padding="15", style="Glass.TLabelframe")
+        project_frame.pack(fill=tk.X, pady=(0, 12))
         
-        # Folder selection
-        folder_frame = ttk.Frame(project_frame)
-        folder_frame.pack(fill=tk.X, pady=(0, 8))
+        # Folder selection with glassmorphism
+        folder_frame = ttk.Frame(project_frame, style="Glass.TFrame")
+        folder_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Label(folder_frame, text="Project Folder:").pack(anchor=tk.W)
-        folder_row = ttk.Frame(folder_frame)
+        ttk.Label(folder_frame, text="📂 Project Folder:", style="Accent.TLabel").pack(anchor=tk.W, pady=(0, 5))
+        folder_row = ttk.Frame(folder_frame, style="Glass.TFrame")
         folder_row.pack(fill=tk.X, pady=(3, 0))
         
-        self.folder_label = ttk.Label(folder_row, text="No folder selected", relief=tk.SUNKEN, anchor=tk.W)
-        self.folder_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+        self.folder_label = ttk.Label(folder_row, text="No folder selected", style="Glass.TLabel", relief=tk.SUNKEN, anchor=tk.W)
+        self.folder_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
         
-        folder_btn = ttk.Button(folder_row, text="Browse", command=self.select_folder)
+        folder_btn = ttk.Button(folder_row, text="🔍 Browse", command=self.select_folder, style="Glass.TButton")
         folder_btn.pack(side=tk.RIGHT)
         
-        # Repository URL input
-        repo_frame = ttk.Frame(project_frame)
-        repo_frame.pack(fill=tk.X)
+        # Repository URL input with glassmorphism
+        repo_frame = ttk.Frame(project_frame, style="Glass.TFrame")
+        repo_frame.pack(fill=tk.X, pady=(5, 0))
         
-        ttk.Label(repo_frame, text="GitHub Repository URL:").pack(anchor=tk.W)
-        ttk.Entry(repo_frame, textvariable=self.repo_url).pack(fill=tk.X, pady=(3, 0))
+        ttk.Label(repo_frame, text="🌐 GitHub Repository URL:", style="Accent.TLabel").pack(anchor=tk.W, pady=(0, 5))
+        ttk.Entry(repo_frame, textvariable=self.repo_url, style="Glass.TEntry", font=('Segoe UI', 9)).pack(fill=tk.X, pady=(3, 0))
         
-        # Development Type section
-        self.dev_type_frame = ttk.LabelFrame(content_frame, text="Development Type", padding="10")
-        self.dev_type_frame.pack(fill=tk.X, pady=(0, 10))
+        # Development Type section with glassmorphism
+        self.dev_type_frame = ttk.LabelFrame(content_frame, text="⚙️ Development Type", padding="15", style="Glass.TLabelframe")
+        self.dev_type_frame.pack(fill=tk.X, pady=(0, 12))
         
         self.create_development_type_widgets()
         
-        # Manage Types button
-        manage_btn_frame = ttk.Frame(self.dev_type_frame)
-        manage_btn_frame.pack(fill=tk.X, pady=(8, 0))
+        # Manage Types button with glassmorphism
+        manage_btn_frame = ttk.Frame(self.dev_type_frame, style="Glass.TFrame")
+        manage_btn_frame.pack(fill=tk.X, pady=(10, 0))
         
-        ttk.Button(manage_btn_frame, text="Manage Development Types", 
-                  command=self.open_manage_types).pack()
+        ttk.Button(manage_btn_frame, text="🔧 Manage Development Types", 
+                  command=self.open_manage_types, style="Glass.TButton").pack()
         
-        # Action buttons frame
-        action_frame = ttk.Frame(content_frame)
-        action_frame.pack(fill=tk.X, pady=(10, 0))
+        # Action buttons frame with glassmorphism
+        action_frame = ttk.Frame(content_frame, style="Glass.TFrame")
+        action_frame.pack(fill=tk.X, pady=(15, 0))
         
-        # Connect button
-        connect_btn = ttk.Button(action_frame, text="Connect to GitHub", 
-                               command=self.start_connection, style="Accent.TButton")
-        connect_btn.pack(pady=(0, 10))
+        # Beautiful primary connect button
+        connect_btn = ttk.Button(action_frame, text="🚀 Connect to GitHub 💫", 
+                               command=self.start_connection, style="Primary.TButton")
+        connect_btn.pack(pady=(5, 15))
         
-        # Create custom style for the connect button
-        style = ttk.Style()
-        style.configure("Accent.TButton", font=("Helvetica", 12, "bold"))
+        # Alice-themed progress bar
+        self.progress_bar = ttk.Progressbar(action_frame, mode="determinate", style="Alice.Horizontal.TProgressbar")
+        self.progress_bar.pack(fill=tk.X, pady=(0, 15))
         
-        # Progress bar
-        self.progress_bar = ttk.Progressbar(action_frame, mode="determinate")
-        self.progress_bar.pack(fill=tk.X, pady=(0, 10))
+        # Log area with beautiful glassmorphism
+        log_frame = ttk.LabelFrame(content_frame, text="📝 Connection Log", padding="12", style="Glass.TLabelframe")
+        log_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 12))
         
-        # Log area
-        log_frame = ttk.LabelFrame(content_frame, text="Connection Log", padding="8")
-        log_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
-        
-        # Create log text with scrollbar
-        log_container = ttk.Frame(log_frame)
+        # Create log text with glassmorphism styling
+        log_container = ttk.Frame(log_frame, style="Glass.TFrame")
         log_container.pack(fill=tk.BOTH, expand=True)
         
-        log_scrollbar = ttk.Scrollbar(log_container)
+        log_scrollbar = ttk.Scrollbar(log_container, style="Glass.Vertical.TScrollbar")
         log_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        self.log_text = tk.Text(log_container, height=8, wrap=tk.WORD, yscrollcommand=log_scrollbar.set)
+        # Beautiful log text with Alice color scheme - perfect height for fixed window
+        self.log_text = tk.Text(log_container, height=6, wrap=tk.WORD, 
+                               yscrollcommand=log_scrollbar.set,
+                               bg=colors['bg_secondary'], fg=colors['text_primary'],
+                               insertbackground=colors['accent'], selectbackground=colors['accent'],
+                               font=('Consolas', 9), relief=tk.FLAT, borderwidth=0)
         self.log_text.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
         log_scrollbar.config(command=self.log_text.yview)
         
-        # Status bar
-        self.status_var = tk.StringVar(value="Ready")
-        status_bar = ttk.Label(content_frame, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
-        status_bar.pack(fill=tk.X, pady=(5, 0))
+        # Beautiful status bar with Alice signature
+        self.status_var = tk.StringVar(value="✨ Ready - Alice is here to help! ✨")
+        status_bar = ttk.Label(content_frame, textvariable=self.status_var, 
+                              style="Glass.TLabel", relief=tk.RAISED, anchor=tk.W)
+        status_bar.pack(fill=tk.X, pady=(8, 5))
         
         # Bind mouse wheel to main canvas
         def _on_mousewheel(event):
@@ -290,45 +461,54 @@ class GitOneClickGUI:
             if not isinstance(widget, ttk.Button) and not isinstance(widget, ttk.Frame):
                 widget.destroy()
         
-        # Create a more compact layout for development types
+        # Create beautiful development type layout with glassmorphism
         if len(self.dev_types) <= 6:
             # If 6 or fewer types, show them all without scrolling
             for dev_id, dev_info in self.dev_types.items():
-                dev_row = ttk.Frame(self.dev_type_frame)
-                dev_row.pack(fill=tk.X, pady=1)
+                dev_row = ttk.Frame(self.dev_type_frame, style="Glass.TFrame")
+                dev_row.pack(fill=tk.X, pady=3)
                 
-                rb = ttk.Radiobutton(dev_row, text=dev_info["name"], variable=self.dev_type, value=dev_id)
+                # Add appropriate emoji for each dev type
+                dev_emoji = self.get_dev_type_emoji(dev_id)
+                rb = ttk.Radiobutton(dev_row, text=f"{dev_emoji} {dev_info['name']}", 
+                                   variable=self.dev_type, value=dev_id, style="Glass.TRadiobutton")
                 rb.pack(side=tk.LEFT)
                 
                 if "description" in dev_info:
-                    desc_label = ttk.Label(dev_row, text=f"- {dev_info['description']}", 
-                                         font=("Helvetica", 9), foreground="gray")
-                    desc_label.pack(side=tk.LEFT, padx=(8, 0))
+                    desc_label = ttk.Label(dev_row, text=f"• {dev_info['description']}", 
+                                         style="Glass.TLabel", font=("Segoe UI", 8))
+                    desc_label.pack(side=tk.LEFT, padx=(10, 0))
         else:
-            # If more than 6 types, use a scrollable frame
-            dev_canvas = tk.Canvas(self.dev_type_frame, highlightthickness=0, height=150)
+            # If more than 6 types, use a beautiful scrollable frame with glassmorphism
+            colors = self.setup_custom_styles()
+            dev_canvas = tk.Canvas(self.dev_type_frame, highlightthickness=0, height=150, 
+                                 bg=colors['bg_glass'])
             dev_canvas.pack(fill=tk.X, pady=(0, 8))
             
-            dev_scrollbar = ttk.Scrollbar(self.dev_type_frame, orient="vertical", command=dev_canvas.yview)
+            dev_scrollbar = ttk.Scrollbar(self.dev_type_frame, orient="vertical", command=dev_canvas.yview, 
+                                        style="Glass.Vertical.TScrollbar")
             dev_scrollbar.pack(side=tk.RIGHT, fill=tk.Y, before=dev_canvas)
             
             dev_canvas.configure(yscrollcommand=dev_scrollbar.set)
             
-            self.dev_scrollable_frame = ttk.Frame(dev_canvas)
+            self.dev_scrollable_frame = ttk.Frame(dev_canvas, style="Glass.TFrame")
             canvas_window = dev_canvas.create_window((0, 0), window=self.dev_scrollable_frame, anchor="nw")
             
-            # Create radio buttons for each development type
+            # Create beautiful radio buttons with glassmorphism for each development type
             for dev_id, dev_info in self.dev_types.items():
-                dev_row = ttk.Frame(self.dev_scrollable_frame)
-                dev_row.pack(fill=tk.X, pady=1)
+                dev_row = ttk.Frame(self.dev_scrollable_frame, style="Glass.TFrame")
+                dev_row.pack(fill=tk.X, pady=3)
                 
-                rb = ttk.Radiobutton(dev_row, text=dev_info["name"], variable=self.dev_type, value=dev_id)
+                # Add appropriate emoji for each dev type
+                dev_emoji = self.get_dev_type_emoji(dev_id)
+                rb = ttk.Radiobutton(dev_row, text=f"{dev_emoji} {dev_info['name']}", 
+                                   variable=self.dev_type, value=dev_id, style="Glass.TRadiobutton")
                 rb.pack(side=tk.LEFT)
                 
                 if "description" in dev_info:
-                    desc_label = ttk.Label(dev_row, text=f"- {dev_info['description']}", 
-                                         font=("Helvetica", 9), foreground="gray")
-                    desc_label.pack(side=tk.LEFT, padx=(8, 0))
+                    desc_label = ttk.Label(dev_row, text=f"• {dev_info['description']}", 
+                                         style="Glass.TLabel", font=("Segoe UI", 8))
+                    desc_label.pack(side=tk.LEFT, padx=(10, 0))
             
             # Configure scroll region
             def configure_dev_scroll(event=None):
@@ -354,14 +534,23 @@ class GitOneClickGUI:
             self.root.after(100, self.auto_resize_window)
 
     def open_manage_types(self):
-        """Open dialog to manage development types"""
-        # Create a new top-level window
+        """Open dialog to manage development types with beautiful glassmorphism"""
+        # Create a new top-level window with Alice styling
         manage_window = tk.Toplevel(self.root)
-        manage_window.title("Manage Development Types")
-        manage_window.geometry("650x550")
+        manage_window.title("🔧 Manage Development Types - Alice Edition")
+        manage_window.geometry("680x580")
         manage_window.resizable(True, True)
         manage_window.transient(self.root)
         manage_window.grab_set()
+        
+        # Apply Alice's glassmorphism to the manage window
+        colors = self.setup_custom_styles()
+        manage_window.configure(bg=colors['bg_primary'])
+        if platform.system() == "Windows":
+            try:
+                manage_window.wm_attributes("-alpha", 0.95)
+            except:
+                pass
         
         # Center the dialog
         manage_window.geometry("+%d+%d" % (
@@ -369,18 +558,21 @@ class GitOneClickGUI:
             self.root.winfo_rooty() + 50
         ))
         
-        # Create a list of current development types
-        types_frame = ttk.LabelFrame(manage_window, text="Current Development Types", padding="10")
-        types_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Create a list of current development types with glassmorphism
+        types_frame = ttk.LabelFrame(manage_window, text="📋 Current Development Types", padding="15", style="Glass.TLabelframe")
+        types_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
         
-        # Create a listbox to display types
-        listbox_frame = ttk.Frame(types_frame)
+        # Create a listbox to display types with Alice styling
+        listbox_frame = ttk.Frame(types_frame, style="Glass.TFrame")
         listbox_frame.pack(fill=tk.BOTH, expand=True)
         
-        scrollbar = ttk.Scrollbar(listbox_frame)
+        scrollbar = ttk.Scrollbar(listbox_frame, style="Glass.Vertical.TScrollbar")
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        listbox = tk.Listbox(listbox_frame, yscrollcommand=scrollbar.set, font=("Helvetica", 10))
+        listbox = tk.Listbox(listbox_frame, yscrollcommand=scrollbar.set, font=("Segoe UI", 10),
+                           bg=colors['bg_secondary'], fg=colors['text_primary'],
+                           selectbackground=colors['accent'], selectforeground='white',
+                           borderwidth=0, relief=tk.FLAT)
         listbox.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
         scrollbar.config(command=listbox.yview)
         
@@ -392,12 +584,13 @@ class GitOneClickGUI:
         
         refresh_listbox()
         
-        # Buttons for adding, editing, and removing types
-        btn_frame = ttk.Frame(types_frame)
-        btn_frame.pack(fill=tk.X, pady=10)
+        # Buttons for adding, editing, and removing types with glassmorphism
+        btn_frame = ttk.Frame(types_frame, style="Glass.TFrame")
+        btn_frame.pack(fill=tk.X, pady=12)
         
-        ttk.Button(btn_frame, text="Add New Type", 
-                command=lambda: self.edit_type_dialog(manage_window, None, refresh_listbox)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="➕ Add New Type", 
+                command=lambda: self.edit_type_dialog(manage_window, None, refresh_listbox), 
+                style="Glass.TButton").pack(side=tk.LEFT, padx=6)
         
         def get_selected_type_id():
             selection = listbox.curselection()
@@ -406,91 +599,111 @@ class GitOneClickGUI:
                 return selected_text.split(" (")[-1][:-1]
             return None
         
-        ttk.Button(btn_frame, text="Edit Selected", 
-                command=lambda: self.edit_type_dialog(manage_window, get_selected_type_id(), refresh_listbox)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="✏️ Edit Selected", 
+                command=lambda: self.edit_type_dialog(manage_window, get_selected_type_id(), refresh_listbox), 
+                style="Glass.TButton").pack(side=tk.LEFT, padx=6)
         
-        ttk.Button(btn_frame, text="Remove Selected", 
-                command=lambda: self.remove_type(get_selected_type_id(), refresh_listbox)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="🗑️ Remove Selected", 
+                command=lambda: self.remove_type(get_selected_type_id(), refresh_listbox), 
+                style="Glass.TButton").pack(side=tk.LEFT, padx=6)
         
-        # Import/Export buttons
-        io_frame = ttk.Frame(types_frame)
-        io_frame.pack(fill=tk.X, pady=5)
+        # Import/Export buttons with glassmorphism
+        io_frame = ttk.Frame(types_frame, style="Glass.TFrame")
+        io_frame.pack(fill=tk.X, pady=8)
         
-        ttk.Button(io_frame, text="Import Types", 
-                command=lambda: self.import_types(refresh_listbox)).pack(side=tk.LEFT, padx=5)
+        ttk.Button(io_frame, text="📥 Import Types", 
+                command=lambda: self.import_types(refresh_listbox), 
+                style="Glass.TButton").pack(side=tk.LEFT, padx=6)
         
-        ttk.Button(io_frame, text="Export All Types", 
-                command=self.export_types).pack(side=tk.LEFT, padx=5)
+        ttk.Button(io_frame, text="📤 Export All Types", 
+                command=self.export_types, 
+                style="Glass.TButton").pack(side=tk.LEFT, padx=6)
         
-        # Done button
-        ttk.Button(manage_window, text="Done", 
-                command=manage_window.destroy).pack(pady=10)
+        # Done button with Alice styling
+        ttk.Button(manage_window, text="✅ Done", 
+                command=manage_window.destroy, 
+                style="Primary.TButton").pack(pady=15)
 
     def edit_type_dialog(self, parent, type_id=None, refresh_callback=None):
-        """Open dialog to add or edit a development type"""
+        """Open dialog to add or edit a development type with glassmorphism"""
         is_new = type_id is None
         
         dialog = tk.Toplevel(parent)
-        dialog.title("Add Development Type" if is_new else "Edit Development Type")
-        dialog.geometry("600x700")
+        dialog.title(f"{'➕ Add' if is_new else '✏️ Edit'} Development Type - Alice Edition")
+        dialog.geometry("620x720")
         dialog.resizable(True, True)
         dialog.transient(parent)
         dialog.grab_set()
+        
+        # Apply Alice's glassmorphism to the dialog
+        colors = self.setup_custom_styles()
+        dialog.configure(bg=colors['bg_primary'])
+        if platform.system() == "Windows":
+            try:
+                dialog.wm_attributes("-alpha", 0.95)
+            except:
+                pass
         
         # Variables
         type_id_var = tk.StringVar(value=type_id if not is_new else "")
         type_name_var = tk.StringVar(value=self.dev_types.get(type_id, {}).get("name", "") if not is_new else "")
         type_desc_var = tk.StringVar(value=self.dev_types.get(type_id, {}).get("description", "") if not is_new else "")
         
-        # Main frame
-        main_frame = ttk.Frame(dialog, padding="10")
+        # Main frame with glassmorphism
+        main_frame = ttk.Frame(dialog, padding="15", style="Glass.TFrame")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Type ID
-        id_frame = ttk.Frame(main_frame)
-        id_frame.pack(fill=tk.X, pady=5)
+        # Type ID with glassmorphism
+        id_frame = ttk.Frame(main_frame, style="Glass.TFrame")
+        id_frame.pack(fill=tk.X, pady=8)
         
-        ttk.Label(id_frame, text="Type ID:").pack(side=tk.LEFT)
-        id_entry = ttk.Entry(id_frame, textvariable=type_id_var)
-        id_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        ttk.Label(id_frame, text="🏷️ Type ID:", style="Accent.TLabel").pack(side=tk.LEFT)
+        id_entry = ttk.Entry(id_frame, textvariable=type_id_var, style="Glass.TEntry")
+        id_entry.pack(side=tk.LEFT, padx=8, fill=tk.X, expand=True)
         
         # Disable ID field if editing
         if not is_new:
             id_entry.config(state=tk.DISABLED)
         
-        # Type Name
-        name_frame = ttk.Frame(main_frame)
-        name_frame.pack(fill=tk.X, pady=5)
+        # Type Name with glassmorphism
+        name_frame = ttk.Frame(main_frame, style="Glass.TFrame")
+        name_frame.pack(fill=tk.X, pady=8)
         
-        ttk.Label(name_frame, text="Display Name:").pack(side=tk.LEFT)
-        ttk.Entry(name_frame, textvariable=type_name_var).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        ttk.Label(name_frame, text="📝 Display Name:", style="Accent.TLabel").pack(side=tk.LEFT)
+        ttk.Entry(name_frame, textvariable=type_name_var, style="Glass.TEntry").pack(side=tk.LEFT, padx=8, fill=tk.X, expand=True)
         
-        # Type Description
-        desc_frame = ttk.Frame(main_frame)
-        desc_frame.pack(fill=tk.X, pady=5)
+        # Type Description with glassmorphism
+        desc_frame = ttk.Frame(main_frame, style="Glass.TFrame")
+        desc_frame.pack(fill=tk.X, pady=8)
         
-        ttk.Label(desc_frame, text="Description:").pack(side=tk.LEFT)
-        ttk.Entry(desc_frame, textvariable=type_desc_var).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        ttk.Label(desc_frame, text="📄 Description:", style="Accent.TLabel").pack(side=tk.LEFT)
+        ttk.Entry(desc_frame, textvariable=type_desc_var, style="Glass.TEntry").pack(side=tk.LEFT, padx=8, fill=tk.X, expand=True)
         
-        # .gitignore content
-        gitignore_frame = ttk.LabelFrame(main_frame, text=".gitignore Content", padding="5")
-        gitignore_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        # .gitignore content with glassmorphism
+        gitignore_frame = ttk.LabelFrame(main_frame, text="📝 .gitignore Content", padding="10", style="Glass.TLabelframe")
+        gitignore_frame.pack(fill=tk.BOTH, expand=True, pady=8)
         
-        gitignore_scroll = ttk.Scrollbar(gitignore_frame)
+        gitignore_scroll = ttk.Scrollbar(gitignore_frame, style="Glass.Vertical.TScrollbar")
         gitignore_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         
-        gitignore_text = tk.Text(gitignore_frame, height=10, wrap=tk.WORD, yscrollcommand=gitignore_scroll.set)
+        gitignore_text = tk.Text(gitignore_frame, height=10, wrap=tk.WORD, yscrollcommand=gitignore_scroll.set,
+                               bg=colors['bg_secondary'], fg=colors['text_primary'],
+                               insertbackground=colors['accent'], selectbackground=colors['accent'],
+                               font=('Consolas', 9), relief=tk.FLAT, borderwidth=0)
         gitignore_text.pack(fill=tk.BOTH, expand=True)
         gitignore_scroll.config(command=gitignore_text.yview)
         
-        # README template
-        readme_frame = ttk.LabelFrame(main_frame, text="README.md Template", padding="5")
-        readme_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        # README template with glassmorphism
+        readme_frame = ttk.LabelFrame(main_frame, text="📄 README.md Template", padding="10", style="Glass.TLabelframe")
+        readme_frame.pack(fill=tk.BOTH, expand=True, pady=8)
         
-        readme_scroll = ttk.Scrollbar(readme_frame)
+        readme_scroll = ttk.Scrollbar(readme_frame, style="Glass.Vertical.TScrollbar")
         readme_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         
-        readme_text = tk.Text(readme_frame, height=10, wrap=tk.WORD, yscrollcommand=readme_scroll.set)
+        readme_text = tk.Text(readme_frame, height=10, wrap=tk.WORD, yscrollcommand=readme_scroll.set,
+                             bg=colors['bg_secondary'], fg=colors['text_primary'],
+                             insertbackground=colors['accent'], selectbackground=colors['accent'],
+                             font=('Segoe UI', 9), relief=tk.FLAT, borderwidth=0)
         readme_text.pack(fill=tk.BOTH, expand=True)
         readme_scroll.config(command=readme_text.yview)
         
@@ -504,14 +717,14 @@ class GitOneClickGUI:
             readme_template = self.dev_types.get(type_id, {}).get("readme_template", "")
             readme_text.insert("1.0", readme_template)
         
-        # Buttons
-        btn_frame = ttk.Frame(main_frame)
-        btn_frame.pack(fill=tk.X, pady=10)
+        # Buttons with glassmorphism
+        btn_frame = ttk.Frame(main_frame, style="Glass.TFrame")
+        btn_frame.pack(fill=tk.X, pady=15)
         
-        ttk.Button(btn_frame, text="Cancel", 
-                command=dialog.destroy).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(btn_frame, text="❌ Cancel", 
+                command=dialog.destroy, style="Glass.TButton").pack(side=tk.RIGHT, padx=8)
         
-        ttk.Button(btn_frame, text="Save", 
+        ttk.Button(btn_frame, text="💾 Save", 
                 command=lambda: self.save_type(
                     dialog, 
                     type_id_var.get(), 
@@ -520,7 +733,7 @@ class GitOneClickGUI:
                     gitignore_text.get("1.0", tk.END), 
                     readme_text.get("1.0", tk.END),
                     refresh_callback
-                )).pack(side=tk.RIGHT, padx=5)
+                ), style="Primary.TButton").pack(side=tk.RIGHT, padx=8)
 
     def save_type(self, dialog, type_id, name, description, gitignore, readme, refresh_callback=None):
         """Save a development type to the configuration"""
