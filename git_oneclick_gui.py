@@ -218,7 +218,7 @@ class GitOneClickGUI:
             config_path = self.resource_path("development_types.json")
             
             if os.path.exists(config_path):
-                with open(config_path, 'r') as f:
+                with open(config_path, 'r', encoding='utf-8') as f:
                     self.dev_types = json.load(f)
                 print(f"Loaded {len(self.dev_types)} development types from {config_path}")
             else:
@@ -796,7 +796,7 @@ class GitOneClickGUI:
         
         if file_path:
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, 'r', encoding='utf-8') as f:
                     imported_types = json.load(f)
                 
                 # Validate format
@@ -835,8 +835,8 @@ class GitOneClickGUI:
         
         if file_path:
             try:
-                with open(file_path, 'w') as f:
-                    json.dump(self.dev_types, f, indent=2)
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(self.dev_types, f, indent=2, ensure_ascii=False)
                 
                 messagebox.showinfo("Export Successful", f"Successfully exported {len(self.dev_types)} development types to {file_path}.")
             
@@ -851,8 +851,8 @@ class GitOneClickGUI:
             # Create directory if it doesn't exist
             os.makedirs(os.path.dirname(config_path), exist_ok=True)
             
-            with open(config_path, 'w') as f:
-                json.dump(self.dev_types, f, indent=2)
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(self.dev_types, f, indent=2, ensure_ascii=False)
             
             print(f"Saved {len(self.dev_types)} development types to {config_path}")
         
