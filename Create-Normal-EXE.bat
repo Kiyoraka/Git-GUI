@@ -16,7 +16,7 @@ echo Building Git-OneClick Normal Version...
 echo.
 
 REM Build the executable
-pyinstaller --onefile --windowed --icon=git-gui.ico --name="Git-OneClick" --add-data "development_types.json;." git_oneclick_normal.py
+pyinstaller --onefile --windowed --icon=git-gui.ico --name="Git-OneClick" --add-data "development_types.json;." git_oneclick_gui.py
 
 echo.
 echo ============================================

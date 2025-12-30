@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['git_oneclick_normal.py'],
+    ['git_oneclick_gui.py'],
     pathex=[],
     binaries=[],
     datas=[('development_types.json', '.')],
