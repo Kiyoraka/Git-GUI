@@ -390,7 +390,12 @@ class GitOneClickGUI:
         folder_row = ttk.Frame(folder_frame, style="Glass.TFrame")
         folder_row.pack(fill=tk.X, pady=(3, 0))
         
-        self.folder_label = ttk.Label(folder_row, text="No folder selected", style="Glass.TLabel", relief=tk.SUNKEN, anchor=tk.W)
+        # Use tk.Label for consistent color and border with Entry fields
+        self.folder_label = tk.Label(folder_row, text="No folder selected",
+                                     bg=colors['bg_secondary'], fg=colors['text_primary'],
+                                     font=('Segoe UI', 9), anchor=tk.W, padx=5, pady=4,
+                                     relief=tk.FLAT, borderwidth=1,
+                                     highlightthickness=1, highlightcolor=colors['border'], highlightbackground=colors['bg_secondary'])
         self.folder_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
         
         folder_btn = ttk.Button(folder_row, text="🔍 Browse", command=self.select_folder, style="Glass.TButton")
