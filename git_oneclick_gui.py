@@ -360,13 +360,23 @@ class GitOneClickGUI:
         name_frame = ttk.Frame(user_row, style="Glass.TFrame")
         name_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
         ttk.Label(name_frame, text="🔑 Git Username:", style="Accent.TLabel").pack(anchor=tk.W, pady=(0, 3))
-        ttk.Entry(name_frame, textvariable=self.git_name, style="Glass.TEntry", font=('Segoe UI', 9)).pack(fill=tk.X)
-        
+        # Use tk.Entry for proper text color control on Windows
+        tk.Entry(name_frame, textvariable=self.git_name,
+                bg=colors['bg_secondary'], fg=colors['text_primary'],
+                insertbackground=colors['accent'], selectbackground=colors['accent'],
+                font=('Segoe UI', 9), relief=tk.FLAT, borderwidth=1,
+                highlightthickness=1, highlightcolor=colors['border'], highlightbackground=colors['bg_secondary']).pack(fill=tk.X)
+
         # Git email (right half) with glass effect
         email_frame = ttk.Frame(user_row, style="Glass.TFrame")
         email_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(8, 0))
         ttk.Label(email_frame, text="📧 Git Email:", style="Accent.TLabel").pack(anchor=tk.W, pady=(0, 3))
-        ttk.Entry(email_frame, textvariable=self.git_email, style="Glass.TEntry", font=('Segoe UI', 9)).pack(fill=tk.X)
+        # Use tk.Entry for proper text color control on Windows
+        tk.Entry(email_frame, textvariable=self.git_email,
+                bg=colors['bg_secondary'], fg=colors['text_primary'],
+                insertbackground=colors['accent'], selectbackground=colors['accent'],
+                font=('Segoe UI', 9), relief=tk.FLAT, borderwidth=1,
+                highlightthickness=1, highlightcolor=colors['border'], highlightbackground=colors['bg_secondary']).pack(fill=tk.X)
         
         # Project Configuration section with beautiful glassmorphism
         project_frame = ttk.LabelFrame(content_frame, text="📁 Project Configuration", padding="15", style="Glass.TLabelframe")
@@ -389,9 +399,14 @@ class GitOneClickGUI:
         # Repository URL input with glassmorphism
         repo_frame = ttk.Frame(project_frame, style="Glass.TFrame")
         repo_frame.pack(fill=tk.X, pady=(5, 0))
-        
+
         ttk.Label(repo_frame, text="🌐 GitHub Repository URL:", style="Accent.TLabel").pack(anchor=tk.W, pady=(0, 5))
-        ttk.Entry(repo_frame, textvariable=self.repo_url, style="Glass.TEntry", font=('Segoe UI', 9)).pack(fill=tk.X, pady=(3, 0))
+        # Use tk.Entry instead of ttk.Entry for proper text color control on Windows
+        tk.Entry(repo_frame, textvariable=self.repo_url,
+                bg=colors['bg_secondary'], fg=colors['text_primary'],
+                insertbackground=colors['accent'], selectbackground=colors['accent'],
+                font=('Segoe UI', 9), relief=tk.FLAT, borderwidth=1,
+                highlightthickness=1, highlightcolor=colors['border'], highlightbackground=colors['bg_secondary']).pack(fill=tk.X, pady=(3, 0))
         
         # Development Type section with glassmorphism
         self.dev_type_frame = ttk.LabelFrame(content_frame, text="⚙️ Development Type", padding="15", style="Glass.TLabelframe")
